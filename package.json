@@ -1,5 +1,23 @@
 {
   "dependencies": {
     "ws": "^8.18.1"
-  }
+  },
+  "name": "ese4482-server",
+  "version": "0.0.1",
+  "description": "web server to handle participant and spectator integration",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crazytaj/ese4482-server.git"
+  },
+  "author": "Tariq Jassim",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/crazytaj/ese4482-server/issues"
+  },
+  "homepage": "https://github.com/crazytaj/ese4482-server#readme"
 }
