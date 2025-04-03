@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ESE4482 Participant Console</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: white;
+      text-align: center;
+    }
+    .full-screen-text {
+      font-size: 33vh; /* 1/3 of viewport height */
+      font-weight: bold;
+      display: none;
+    }
+    #header, #timer {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    #outcome {
+      display: none;
+      text-align: center;
+    }
+    #outcome h1 {
+      font-size: 8vh;
+    }
+    #outcome h2 {
+      font-size: 5vh;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+    <div id="header" class="full-screen-text">BEGIN TRIAL</div>
+    <div id="timer" class="full-screen-text">Timer: 0.00 s</div>
+    <div id="outcome">
+        <h1 id="outcomeText">Played Machine: </h1>
+        <h2 id="resultText"></h2>
+    </div>
+
+    <script>
+        var timerInterval = null;
+        const ws = new WebSocket('ws://' + window.location.host);
+
+        ws.onmessage = (event) => {
+            try {
+                const msg = JSON.parse(event.data);
+                if (msg.label === 'callRequest') {
+                    callRequest(msg.text, msg.flag);
+                } else if (msg.label == 'awareness') {
+                    awareness(msg.timestamp);
+                } else if (msg.label == 'outcome') {
+                    outcome(msg.machine, msg.success);
+                }
+            } catch (e) {
+                console.error("Invalid JSON message:", event.data);
+            }
+        };
+
+        function outcome(machine, success) {
+            document.getElementById("header").style.display = "none";
+            document.getElementById("timer").style.display = "none";
+
+            document.body.style.backgroundColor = success == 1 ? "green" : "red";
+
+            var outcomeDiv = document.getElementById("outcome");
+            outcomeDiv.style.display = "block";
+            document.getElementById("outcomeText").textContent = "Played Machine: " + machine;
+            document.getElementById("resultText").textContent = success == 1 ? "WON" : "LOSS";
+        }
+
+        function awareness(timestamp) {
+            var delay = timestamp - Date.now();
+            if (delay < 0) delay = 0;
+            
+            document.getElementById("timer").style.display = "none";
+            document.getElementById("outcome").style.display = "none";
+            document.body.style.backgroundColor = "blue";
+
+            var header = document.getElementById("header");
+            header.style.display = "block";
+
+            setTimeout(function() {
+                document.body.style.backgroundColor = "";
+                startTimer(timestamp);
+            }, delay + 1000);
+        }
+
+        function startTimer(startTime) {
+            document.getElementById("header").style.display = "none";
+            var timerDiv = document.getElementById("timer");
+            timerDiv.style.display = "block";
+
+            var startTimeMs = startTime;
+            if (timerInterval) clearInterval(timerInterval);
+
+            timerDiv.textContent = "Timer: 0.00 s";
+            timerInterval = setInterval(function() {
+                var elapsed = (Date.now() - startTimeMs) / 1000;
+                timerDiv.textContent = "Timer: " + elapsed.toFixed(2) + " s";
+            }, 10);
+        }
+
+        function callRequest(text, flag){
+            console.log('callRequest invoked with text: "' + text + '" and flag: ' + flag);
+        }
+    </script>
+</body>
+</html>
