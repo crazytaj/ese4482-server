@@ -1,7 +1,24 @@
 # Setup
 `npm install`
-# Use
+### Start the server
 `npm start`
+### (Optional) Start the tunnel
+you can use either ![ngrok](https://ngrok.com/docs/getting-started/setup) or ![localtunnel](https://github.com/localtunnel/localtunnel) to easily tunnel the local server to a different device. In our integration we utilize an iPad to display the participant view, and so tunneling is necessary (to avoid port-forwarding)\
+
+we recommend using localtunnel for the quickest integration, as it does not require an account, however each time you open a tunnel it will give a different address which can be annoying. to start a tunnel with localtunnel:
+```
+# Pre-reqs: NodeJS (check with `npm -v`)
+# Installation
+npm install localtunnel
+# Use
+lt --port 3000
+# It will ask you to input a "password", find it at "https://loca.lt/mytunnelpassword"
+```
+to start a tunel with ngrok (after you have installed and configured your auth key):
+```
+ngrok http --url="your_static_url" 3000
+```
+
 # Features
 ## Implemented
 - when the client recieves an awareness event, the screen goes blue and "BEGIN TRIAL" appears. It then starts a timer that counts up (indicating time pressure but giving no time limit)
