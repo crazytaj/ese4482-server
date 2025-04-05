@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Web Companion App</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+    }
+    /* Top carousel container */
+    #carousel {
+      height: 25vh;
+      background: #f0f0f0;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .carousel-item {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      line-height: 50px;
+      text-align: center;
+      margin-right: 10px;
+      color: white;
+      font-weight: bold;
+    }
+    /* Middle plot area */
+    #plotArea {
+      height: 62.5vh;
+      background: #ffffff;
+      position: relative;
+    }
+    #plotCanvas {
+      border: 1px solid #ccc;
+      width: 100%;
+      height: 100%;
+    }
+    /* Bottom machine boxes */
+    #machineBoxes {
+      height: 12.5vh;
+      background: #e0e0e0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+    .machine-box {
+      flex: 1;
+      margin: 0 5px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+    }
+    .adjustment {
+      position: absolute;
+      left: 5px;
+      top: 5px;
+      font-size: 12px;
+      padding: 2px 4px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.7);
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Carousel -->
+  <div id="carousel"></div>
+  
+  <!-- Plot Area -->
+  <div id="plotArea">
+    <canvas id="plotCanvas"></canvas>
+  </div>
+  
+  <!-- Machine Boxes -->
+  <div id="machineBoxes">
+    <div class="machine-box" id="machine1">
+      <div class="adjustment" id="machine1_adj"></div>
+      Machine 1
+    </div>
+    <div class="machine-box" id="machine2">
+      <div class="adjustment" id="machine2_adj"></div>
+      Machine 2
+    </div>
+    <div class="machine-box" id="machine3">
+      <div class="adjustment" id="machine3_adj"></div>
+      Machine 3
+    </div>
+    <div class="machine-box" id="machine4">
+      <div class="adjustment" id="machine4_adj"></div>
+      Machine 4
+    </div>
+  </div>
+  
+  <script>
+    // Set up WebSocket connection
+    const ws = new WebSocket('ws://' + window.location.host);
+    
+    // Define machine boundaries
+    const machines = {
+      "m1": {
+        bottomLeft: [0.914461, -0.416378],
+        bottomRight: [0.897491, -0.716809],
+        upperLeft: [0.615168, -0.399924],
+        upperRight: [0.600168, -0.699141]
+      },
+      "m2": {
+        bottomLeft: [0.930728, -0.117966],
+        bottomRight: [0.914461, -0.416378],
+        upperLeft: [0.634181, -0.100121],
+        upperRight: [0.615168, -0.399924]
+      },
+      "m3": {
+        bottomLeft: [0.945728, 0.181054],
+        bottomRight: [0.930728, -0.117966],
+        upperLeft: [0.652421, 0.196054],
+        upperRight: [0.634181, -0.100121]
+      },
+      "m4": {
+        bottomLeft: [0.975101, 0.483173],
+        bottomRight: [0.945728, 0.181054],
+        upperLeft: [0.669682, 0.497284],
+        upperRight: [0.652421, 0.196054]
+      }
+    };
+    
+    // Canvas and drawing settings
+    const canvas = document.getElementById('plotCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Plot boundaries
+    const xMin = -2, xMax = 1.5; // X-axis
+    const zMin = -1.6, zMax = 1.6; // Z-axis
+    
+    // Player state
+    let playerPosition = { x: 0, z: 0, theta: 0 };
+    
+    // Transform world coordinates (because the axis of the arena are weird...)
+    function worldToCanvas(x, z) {
+      // In this mapping, the canvas x coordinate is derived from z values,
+      // and the canvas y coordinate (inverted) is derived from x values.
+      const canvasX = ((z - zMin) / (zMax - zMin)) * canvas.width;
+      const canvasY = canvas.height - ((x - xMin) / (xMax - xMin)) * canvas.height;
+      return { x: canvasX, y: canvasY };
+    }
+    
+    // Draw the entire plot (machine boundaries, player position, and direction arrow)
+    function drawPlot() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw machine boundaries
+      for (let key in machines) {
+        const m = machines[key];
+        // Build polygon points
+        const points = [
+          worldToCanvas(m.bottomLeft[0],m.bottomLeft[1]),
+          worldToCanvas(m.bottomRight[0],m.bottomRight[1]),
+          worldToCanvas(m.upperRight[0],m.upperRight[1]),
+          worldToCanvas(m.upperLeft[0],m.upperLeft[1])
+        ];
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+          ctx.lineTo(points[i].x, points[i].y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = getBoundaryColor(key);
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Draw machine label at center of polygon
+        const centerX = (points[0].x + points[1].x + points[2].x + points[3].x) / 4;
+        const centerY = (points[0].y + points[1].y + points[2].y + points[3].y) / 4;
+        ctx.fillStyle = getBoundaryColor(key);
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(key, centerX, centerY);
+      }
+      
+      // Draw player's position as a red dot
+      const playerCanvas = worldToCanvas(playerPosition.x, playerPosition.z);
+      ctx.beginPath();
+      ctx.arc(playerCanvas.x, playerCanvas.y, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = "red";
+      ctx.fill();
+      
+      // Draw player’s facing direction as a blue arrow
+      const arrowLength = 0.1; // world units
+      const tipX = playerPosition.x + Math.cos(playerPosition.theta) * arrowLength;
+      const tipZ = playerPosition.z + Math.sin(playerPosition.theta) * arrowLength;
+      const tipCanvas = worldToCanvas(tipX, tipZ);
+      ctx.beginPath();
+      ctx.moveTo(playerCanvas.x, playerCanvas.y);
+      ctx.lineTo(tipCanvas.x, tipCanvas.y);
+      ctx.strokeStyle = "blue";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+    
+    // Return a fixed color for machine boundaries
+    function getBoundaryColor(key) {
+      const colors = {
+        "m1": "purple",
+        "m2": "orange",
+        "m3": "green",
+        "m4": "brown"
+      };
+      return colors[key] || "black";
+    }
+    
+    // Resize canvas and redraw plot
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+      drawPlot();
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    
+    // Add an outcome event to the carousel
+    function addOutcome(machine, success) {
+      const carousel = document.getElementById('carousel');
+      const circle = document.createElement('div');
+      circle.className = 'carousel-item';
+      circle.style.backgroundColor = success ? 'green' : 'red';
+      circle.textContent = machine;
+      carousel.appendChild(circle);
+      // Auto-scroll to the end of the carousel
+      carousel.scrollLeft = carousel.scrollWidth;
+    }
+    
+    // Update the player's position and redraw the plot
+    function updatePlayerPosition(x, z, theta) {
+      playerPosition.x = x;
+      playerPosition.z = z;
+      playerPosition.theta = theta;
+      drawPlot();
+    }
+    
+    // Update the machine boxes at the bottom based on winRates and adjustments.
+    // winRates: array of length 4 (values between 0 and 1)
+    // adjustments: array of length 4 (each value to be displayed with color)
+    function updateMachineBoxes(winRates, adjustments) {
+      for (let i = 0; i < 4; i++) {
+        const machineBox = document.getElementById('machine' + (i+1));
+        // Compute a color on a red-blue gradient:
+        // winRate 0 => pure red (255,0,0); winRate 1 => blue (0,0,255)
+        const red = Math.round(255 * (1 - winRates[i]));
+        const blue = Math.round(255 * winRates[i]);
+        machineBox.style.backgroundColor = `rgb(${red}, 0, ${blue})`;
+        
+        // Update adjustment text in the smaller box
+        const adjElem = document.getElementById('machine' + (i+1) + '_adj');
+        const adjVal = adjustments[i];
+        if (adjVal !== undefined) {
+          adjElem.textContent = adjVal;
+          // Color the adjustment text box: red if negative, green if positive, gray if zero.
+          if (adjVal < 0) {
+            adjElem.style.backgroundColor = 'red';
+          } else if (adjVal > 0) {
+            adjElem.style.backgroundColor = 'green';
+          } else {
+            adjElem.style.backgroundColor = 'gray';
+          }
+        }
+      }
+    }
+    
+    // Handle WebSocket messages
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.label === 'awareness') {
+          // Might put an indicator or something, but it seems extra and its already getting a little cluddered.
+          console.log("Awareness event received at", msg.timestamp);
+        } else if (msg.label === 'outcome') {
+          // When an outcome event is received, add a circle to the carousel.
+          addOutcome(msg.machine, msg.success);
+        } else if (msg.label === 'playerPosition') {
+            console.log("playerPosition event received at");
+          // Expected message: { label: 'playerPosition', x: <value>, z: <value>, theta: <value> }
+          updatePlayerPosition(msg.x, msg.z, msg.theta);
+        } else if (msg.label === 'machineAdjustment') {
+          // Expected message: { label: 'machineAdjustment', winRates: [w1, w2, w3, w4], adjustments: [a1, a2, a3, a4] }
+          console.log("machineAdjustment event received at");
+          updateMachineBoxes(msg.winRates, msg.adjustments);
+        }
+      } catch (e) {
+        console.error("Invalid JSON message:", event.data);
+        console.error("Trace:", e);
+      }
+    };
+    
+    ws.onopen = () => {
+      console.log("WebSocket connected");
+    };
+    
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+    
+    // Initial draw
+    drawPlot();
+  </script>
+</body>
+</html>

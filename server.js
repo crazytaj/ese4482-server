@@ -5,7 +5,7 @@ const WebSocket = require('ws');
 
 // Create an HTTP server that handles GET and POST requests.
 const server = http.createServer((req, res) => {
-  if (req.method === 'GET') {
+  if ((req.method === 'GET') && req.url != `/spectator`) {
     // Serve client.html for any GET request.
     const filePath = path.join(__dirname, 'client.html');
     fs.readFile(filePath, (err, data) => {
@@ -15,6 +15,74 @@ const server = http.createServer((req, res) => {
       } else {
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(data);
+      }
+    });
+  } else if ((req.method === 'GET') && req.url === `/spectator`) {
+    // Serve client.html for any GET request.
+    const filePath = path.join(__dirname, 'spectator.html');
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        res.writeHead(500);
+        res.end('Error loading spectator.html');
+      } else {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(data);
+      }
+    });
+  } else if (req.method === 'POST' && req.url === '/spectator') {
+    // Accumulate the request body.
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      try {
+        // Parse the JSON payload.
+        const data = JSON.parse(body);
+        // Look for the event type in the JSON payload.
+        const eventType = data.event;
+        if (!eventType) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Missing "event" field in payload' }));
+          return;
+        }
+        
+        let message;
+        switch (eventType) {
+          case 'machineAdjustment':
+            // Expect a string "text" and boolean "flag".
+            message = JSON.stringify({
+              label: 'machineAdjustment',
+              winRates: data.winrates,
+              adjustments: data.adjustments
+            });
+            break;
+          case 'playerPosition':
+            message = JSON.stringify({
+              label: 'playerPosition',
+              x: data.x,
+              z: data.z,
+              theta: data.theta,
+            });
+            console.log("recieved playerPosition")
+            break;
+          default:
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Unknown event type' }));
+            return;
+        }
+        
+        // Broadcast the message to all connected WebSocket clients.
+        wss.clients.forEach(client => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+          }
+        });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'ok' }));
+      } catch (e) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid JSON' }));
       }
     });
   } else if (req.method === 'POST' && req.url === '/participant') {
