@@ -27,10 +27,10 @@ import requests
   #               winrates after the adjustments were applied
   # adjustments = np.ones(numberOfMachines)
   #               adjustments your model output
-  def send_position(self,x,z,theta):
+  def send_position(x,z,theta):
     requests.post("localhost:3000/spectator",json={"event":"playerPosition","x":float(x),"z":float(z),"theta":float(theta)})
 
-  def send_adjustment(self,winrates,adjustments):
+  def send_adjustment(winrates,adjustments):
     requests.post("localhost:3000/spectator",json={"event":"machineAdjustment","winrates":winrates,"adjustments":adjustments})
 ```
 it assumes an ordering of 1,2,3,4 for the corresponding machine indices.
