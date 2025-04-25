@@ -1,34 +1,65 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta 
-    name="viewport" 
-    content="width=device-width, initial-scale=1, shrink-to-fit=no"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>Web Companion App</title>
 
   <!-- Bootstrap 5 CSS -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-    crossorigin="anonymous"
-  >
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+    crossorigin="anonymous">
 
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       height: 100%;
     }
+
+    .card {
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .card-body {
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+
+    @keyframes flash-border {
+      0% {
+        box-shadow: 0 0 0px 0px rgba(255, 255, 0, 0);
+      }
+
+      50% {
+        box-shadow: 0 0 20px 5px rgba(255, 255, 0, 0.8);
+      }
+
+      100% {
+        box-shadow: 0 0 0px 0px rgba(255, 255, 0, 0);
+      }
+    }
+
+    .machine-highlight {
+      animation: flash-border 0.8s ease-out;
+    }
+
     /* Preserve your existing background‑color rules */
-    #playerOverview     { background: #76BBC5; }
+    #playerOverview {
+      background: #a0dee7;
+    }
+
     #playerHistory {
-      background: #8BF668;
+      background: #bef8ab;
       display: flex;
-      flex-wrap: wrap;                 /* wrap to next row when you run out of width */
-      align-content: flex-start;       /* pack wrapped rows toward the top */
-      gap: 8px;                        /* space between bubbles */
+      flex-wrap: wrap;
+      /* wrap to next row when you run out of width */
+      align-content: flex-start;
+      /* pack wrapped rows toward the top */
+      gap: 8px;
+      /* space between bubbles */
       padding: 8px;
     }
 
@@ -38,10 +69,10 @@
       justify-content: center;
       border-radius: 50%;
       font-size: 1.2em;
-      color:white;
+      color: white;
       transition: width 0.3s ease,
-                  height 0.3s ease,
-                  opacity 0.3s ease;
+        height 0.3s ease,
+        opacity 0.3s ease;
       box-sizing: border-box;
       /* default “oldest” size & opacity: */
       width: 30px;
@@ -49,33 +80,61 @@
       opacity: 0.2;
     }
 
-    #playerPreference   { background: #D9956A; }
-    #behavioralModel    { background: #BD9877; }
-    #arenaViewport      { background: #ffffff; }
-    #mocapModel         { background: #ADB698; }
-    #machine1           { background: #b476c5; }
-    #machine2           { background: #6C9DE9; }
-    #machine3           { background: #8c519f; }
-    #machine4           { background: #355a92; }
+    #playerPreference {
+      background: #f0b895;
+    }
+
+    #behavioralModel {
+      background: #f2ccab;
+    }
+
+    #arenaViewport {
+      background: #ffffff;
+    }
+
+    #mocapModel {
+      background: #e3edca;
+    }
+
+    #machine1 {
+      background: #deb9e9;
+    }
+
+    #machine2 {
+      background: #b0cbf4;
+    }
+
+    #machine3 {
+      background: #cf96e2;
+    }
+
+    #machine4 {
+      background: #8bb3ee;
+    }
+
     #arenaViewport {
       height: 100%;
     }
+
     #arenaViewport canvas {
       width: 100%;
       height: 100%;
       display: block;
     }
+
     .no-gutters {
-        margin : 0;
-        padding: 0;
-        > .col,
-        > [class*="col-"] {
-            padding-right: 0;
-            padding-left: 0;
-        }
+      margin: 0;
+      padding: 0;
+
+      >.col,
+      >[class*="col-"] {
+        padding-right: 0;
+        padding-left: 0;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <div class="container-fluid h-100 flex-column d-flex p-0">
@@ -83,545 +142,578 @@
     <div class="row g-0" style="height:20%;">
       <div class="col">
         <div class="card h-100 rounded-0" id="machine1">
-            <div class="card-header pb-0 pt-0 d-flex justify-content-center"><h3>Machine 1</h3></div>
-            <div class="card-body pt-0">
-                <div class="row">
-                  <div class="col">
-                    <p class="card-text" ><strong>Hidden Winrate: </strong></p>
-                    </div>
-                    <div class="col">
-                    <p class="card-text" style="color:red;"><var id="machine1_winrate">50</var>%</p>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col">
-                    <p class="card-text" ><strong>Times played:</strong></p>
-                    </div>
-                    <div class="col">
-                    <p class="card-text"><var id="machine1_total_plays">0</var></p>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col">
-                    <p class="card-text" ><strong>Model Accuracy: </strong></p>
-                    </div>
-                    <div class="col">
-                    <p class="card-text"><var id="machine1_behavioral_acc" style="color:red;">0</var> / <var style="color:green;"id="machine1_mocap_acc">0</var></p>
-
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col">
-                    <p class="card-text" ><strong>Last Model Adjustment: </strong></p>
-                    </div>
-                    <div class="col">
-                    <p class="card-text"><var id="machine1_behavioral_pred" style="color:red;">0</var> / <var style="color:green;"id="machine1_mocap_pred">0</var></p>
-
-                  </div>
-                </div>
+          <div class="card-header pb-0 pt-0 d-flex justify-content-center">
+            <h3>Machine 1</h3>
+          </div>
+          <div class="card-body pt-0">
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Hidden Winrate: </strong></p>
               </div>
+              <div class="col">
+                <p class="card-text" style="color:red;"><var id="machine1_winrate">50</var>%</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Times played:</strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="machine1_total_plays">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Model Accuracy: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="machine1_behavioral_acc" style="color:red;">0</var> / <var
+                    style="color:green;" id="machine1_mocap_acc">0</var></p>
+
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Last Model Adjustment: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="machine1_behavioral_pred" style="color:red;">0</var> / <var
+                    style="color:green;" id="machine1_mocap_pred">0</var></p>
+
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-        <div class="col">
-          <div class="card h-100 rounded-0" id="machine2">
-              <div class="card-header pb-0 pt-0 d-flex justify-content-center"><h3>Machine 2</h3></div>
-              <div class="card-body pt-0">
-                  <div class="row">
-                    <div class="col">
-                      <p class="card-text" ><strong>Hidden Winrate: </strong></p>
-                      </div>
-                      <div class="col">
-                      <p class="card-text" style="color:red;"><var id="machine2_winrate">50</var>%</p>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col">
-                      <p class="card-text" ><strong>Times played:</strong></p>
-                      </div>
-                      <div class="col">
-                      <p class="card-text"><var id="machine2_total_plays">0</var></p>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col">
-                      <p class="card-text" ><strong>Model Accuracy: </strong></p>
-                      </div>
-                      <div class="col">
-                      <p class="card-text"><var id="machine2_behavioral_acc" style="color:red;">0</var> / <var style="color:green;"id="machine2_mocap_acc">0</var></p>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col">
-                      <p class="card-text" ><strong>Last Model Adjustment: </strong></p>
-                      </div>
-                      <div class="col">
-                      <p class="card-text"><var id="machine2_behavioral_pred" style="color:red;">0</var> / <var style="color:green;"id="machine2_mocap_pred">0</var></p>
-                    </div>
-                  </div>
-                </div>
+      <div class="col">
+        <div class="card h-100 rounded-0" id="machine2">
+          <div class="card-header pb-0 pt-0 d-flex justify-content-center">
+            <h3>Machine 2</h3>
           </div>
-          </div>
-          <div class="col">
-            <div class="card h-100 rounded-0" id="machine3">
-                <div class="card-header pt-0 pb-0 d-flex justify-content-center"><h3>Machine 3</h3></div>
-                <div class="card-body pt-0">
-                    <div class="row">
-                      <div class="col">
-                        <p class="card-text" ><strong>Hidden Winrate: </strong></p>
-                        </div>
-                        <div class="col">
-                        <p class="card-text" style="color:red;"><var id="machine3_winrate">50</var>%</p>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col">
-                        <p class="card-text" ><strong>Times played:</strong></p>
-                        </div>
-                        <div class="col">
-                        <p class="card-text"><var id="machine3_total_plays">0</var></p>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col">
-                        <p class="card-text" ><strong>Model Accuracy: </strong></p>
-                        </div>
-                        <div class="col">
-                        <p class="card-text"><var id="machine3_behavioral_acc" style="color:red;">0</var> / <var style="color:green;"id="machine3_mocap_acc">0</var></p>
-    
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col">
-                        <p class="card-text" ><strong>Last Model Adjustment: </strong></p>
-                        </div>
-                        <div class="col">
-                        <p class="card-text"><var id="machine3_behavioral_pred" style="color:red;">0</var> / <var style="color:green;"id="machine3_mocap_pred">0</var></p>
-    
-                      </div>
-                    </div>
-                  </div>
-            </div>
-            </div>
-            <div class="col">
-              <div class="card h-100 rounded-0" id="machine4">
-                  <div class="card-header pb-0 pt-0 d-flex justify-content-center"><h3>Machine 4</h3></div>
-                  <div class="card-body pt-0">
-                      <div class="row">
-                        <div class="col">
-                          <p class="card-text" ><strong>Hidden Winrate: </strong></p>
-                          </div>
-                          <div class="col">
-                          <p class="card-text" style="color:red;"><var id="machine4_winrate">50</var>%</p>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col">
-                          <p class="card-text" ><strong>Times played:</strong></p>
-                          </div>
-                          <div class="col">
-                          <p class="card-text"><var id="machine4_total_plays">0</var></p>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col">
-                          <p class="card-text" ><strong>Model Accuracy: </strong></p>
-                          </div>
-                          <div class="col">
-                          <p class="card-text"><var id="machine4_behavioral_acc" style="color:red;">0</var> / <var style="color:green;"id="machine4_mocap_acc">0</var></p>
-      
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col">
-                          <p class="card-text" ><strong>Last Model Adjustment: </strong></p>
-                          </div>
-                          <div class="col">
-                          <p class="card-text"><var id="machine4_behavioral_pred" style="color:red;">0</var> / <var style="color:green;"id="machine4_mocap_pred">0</var></p>
-      
-                        </div>
-                      </div>
-                    </div>
+          <div class="card-body pt-0">
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Hidden Winrate: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text" style="color:red;"><var id="machine2_winrate">50</var>%</p>
               </div>
             </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Times played:</strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="machine2_total_plays">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Model Accuracy: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="machine2_behavioral_acc" style="color:red;">0</var> / <var
+                    style="color:green;" id="machine2_mocap_acc">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Last Model Adjustment: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="machine2_behavioral_pred" style="color:red;">0</var> / <var
+                    style="color:green;" id="machine2_mocap_pred">0</var></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100 rounded-0" id="machine3">
+          <div class="card-header pt-0 pb-0 d-flex justify-content-center">
+            <h3>Machine 3</h3>
+          </div>
+          <div class="card-body pt-0">
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Hidden Winrate: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text" style="color:red;"><var id="machine3_winrate">50</var>%</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Times played:</strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="machine3_total_plays">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Model Accuracy: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="machine3_behavioral_acc" style="color:red;">0</var> / <var
+                    style="color:green;" id="machine3_mocap_acc">0</var></p>
+
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Last Model Adjustment: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="machine3_behavioral_pred" style="color:red;">0</var> / <var
+                    style="color:green;" id="machine3_mocap_pred">0</var></p>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100 rounded-0" id="machine4">
+          <div class="card-header pb-0 pt-0 d-flex justify-content-center">
+            <h3>Machine 4</h3>
+          </div>
+          <div class="card-body pt-0">
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Hidden Winrate: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text" style="color:red;"><var id="machine4_winrate">50</var>%</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Times played:</strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="machine4_total_plays">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Model Accuracy: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="machine4_behavioral_acc" style="color:red;">0</var> / <var
+                    style="color:green;" id="machine4_mocap_acc">0</var></p>
+
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Last Model Adjustment: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="machine4_behavioral_pred" style="color:red;">0</var> / <var
+                    style="color:green;" id="machine4_mocap_pred">0</var></p>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <!-- Row 2: 55% height -->
-    <div class="row g-0" style="height:55%;">
+    <div class="row g-0 align-items-stretch" style="height:55%;">
       <div class="col-3">
         <div class="card h-100 rounded-0" id="behavioralModel">
-          <div class="card-header d-flex justify-content-center"><h3>Behavioral Model</h3></div>
+          <div class="card-header d-flex justify-content-center">
+            <h3>Behavioral Model</h3>
+          </div>
           <div class="card-body">
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Current Prediction: </strong></p>
-                  </div>
-                  <div class="col">
-                  <p class="card-text" id="behavioral_pred_style">Machine <var id="behavioral_pred">0</var> | <var id="behavioral_adj">0.0</var></p>
-                </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Current Prediction: </strong></p>
               </div>
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Last Prediction: </strong></p>
-                  </div>
-                  <div class="col">
-                  <p class="card-text" id="behavioral_last_pred_style">Machine <var id="behavioral_last_pred">0</var> | <var id="behavioral_last_adj">0.0</var></p>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Benificial Adj Rate:</strong></p>
-                  </div>
-                  <div class="col">
-                  <p class="card-text"><var id="behavioral_adj_rate">0</var></p>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Accuracy: </strong></p>
-                  </div>
-                  <div class="col">
-                  <p class="card-text"><var id="behavioral_acc">0</var></p>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Cumualitive Impact: </strong></p>
-                  </div>
-                  <div class="col">
-                  <p class="card-text"><var id="behavioral_impact">0.0</var></p>
-                </div>
+              <div class="col">
+                <p class="card-text" id="behavioral_pred_style">Machine <var id="behavioral_pred">0</var> | <var
+                    id="behavioral_adj">0.0</var></p>
               </div>
             </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Last Prediction: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text" id="behavioral_last_pred_style">Machine <var id="behavioral_last_pred">0</var> |
+                  <var id="behavioral_last_adj">0.0</var>
+                </p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Benificial Adj Rate:</strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="behavioral_adj_rate">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Accuracy: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="behavioral_acc">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Cumualitive Impact: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="behavioral_impact">0.0</var></p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div id="arenaViewport"   class="col-6"><canvas id="arenaCanvas"></canvas></div>
+      <div id="arenaViewport" class="col-6"><canvas id="arenaCanvas"></canvas></div>
       <div class="col-3">
         <div class="card h-100 rounded-0" id="mocapModel">
-          <div class="card-header d-flex justify-content-center"><h3>MoCap Model</h3></div>
+          <div class="card-header d-flex justify-content-center">
+            <h3>MoCap Model</h3>
+          </div>
           <div class="card-body">
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Current Prediction: </strong></p>
-                  </div>
-                  <div class="col">
-                  <p class="card-text" id="mocap_pred_style">Machine <var id="mocap_pred">0</var> | <var id="mocap_adj">0.0</var></p>
-                </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Current Prediction: </strong></p>
               </div>
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Last Prediction: </strong></p>
-                  </div>
-                  <div class="col">
-                  <p class="card-text" id="mocap_last_pred_style">Machine <var id="mocap_last_pred">0</var> | <var id="mocap_last_adj">0.0</var></p>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Benificial Adj Rate:</strong></p>
-                  </div>
-                  <div class="col">
-                  <p class="card-text"><var id="mocap_adj_rate">0</var></p>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Accuracy: </strong></p>
-                  </div>
-                  <div class="col">
-                  <p class="card-text"><var id="mocap_acc">0</var></p>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Cumualitive Impact: </strong></p>
-                  </div>
-                  <div class="col">
-                  <p class="card-text"><var id="mocap_impact">0.0</var></p>
-                </div>
+              <div class="col">
+                <p class="card-text" id="mocap_pred_style">Machine <var id="mocap_pred">0</var> | <var
+                    id="mocap_adj">0.0</var></p>
               </div>
             </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Last Prediction: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text" id="mocap_last_pred_style">Machine <var id="mocap_last_pred">0</var> | <var
+                    id="mocap_last_adj">0.0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Benificial Adj Rate:</strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="mocap_adj_rate">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Accuracy: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="mocap_acc">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Cumualitive Impact: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="mocap_impact">0.0</var></p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
     <!-- Row 3: 25% height -->
     <div class="row g-0" style="height:25%;">
-      <div id="playerOverview"   class="col-3">
+      <div id="playerOverview" class="col-3">
         <div class="card h-100 rounded-0 pb-0" id="playerOverview">
-          <div class="card-header pt-0 pb-0 d-flex justify-content-center"><h4>Player</h4></div>
-          <div class="card-body pt-0">
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Win / Loss:</strong></p>
-                  </div>
-                  <div class="col">
-                  <p class="card-text"><var id="player_wins" style="color:green;">0</var> / <var id="player_losses" style="color:red;">0</var></p>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Expected Score Range: </strong></p>
-                  </div>
-                  <div class="col">
-                  <p class="card-text"><var id="player_expected_score_low">0</var> - <var id="player_expected_score_high">0</var></p>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Continuous Score: </strong></p>
-                  </div>
-                  <div class="col">
-                  <p class="card-text"><var id="player_continuous_score">0</var></p>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col">
-                  <p class="card-text" ><strong>Beat Model: </strong></p>
-                  </div>
-                  <div class="col">
-                    <p class="card-text"><var id="player_beat_behavioral" style="color:red;">NOT</var> / <var style="color:green;"id="player_beat_mocap">IMPLEMENTED</var></p>
-                  </div>
-              </div>
-            </div>
-        </div>
-      </div>
-      <div id="playerHistory"    class="col-6 d-flex align-items-end">
-      </div>
-      <div id="playerPreference" class="col-3">
-        <div class="card h-100 rounded-0 pb-0" id="playerPreference">
-          <div class="card-header pt-0 pb-0 d-flex justify-content-center"><h4>Machine Preference</h4></div>
+          <div class="card-header pt-0 pb-0 d-flex justify-content-center">
+            <h4>Player</h4>
+          </div>
           <div class="card-body pt-0">
             <div class="row">
               <div class="col">
-                <p class="card-text" ><strong>Machine 1:</strong></p>
-                </div>
-                <div class="col">
-                <p class="card-text"><var id="player_wins" style="color:green;">0</var> / <var id="player_losses" style="color:red;">0</var></p>
+                <p class="card-text"><strong>Win / Loss:</strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="player_wins" style="color:green;">0</var> / <var id="player_losses"
+                    style="color:red;">0</var></p>
               </div>
             </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Expected Score Range: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="player_expected_score_low">0</var> - <var
+                    id="player_expected_score_high">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Continuous Score: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="player_continuous_score">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Beat Model: </strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="player_beat_behavioral" style="color:red;">NOT</var> / <var
+                    style="color:green;" id="player_beat_mocap">IMPLEMENTED</var></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="playerHistory" class="col-6 d-flex align-items-end">
+      </div>
+      <div id="playerPreference" class="col-3">
+        <div class="card h-100 rounded-0 pb-0" id="playerPreference">
+          <div class="card-header pt-0 pb-0 d-flex justify-content-center">
+            <h4>Machine Preference</h4>
+          </div>
+          <div class="card-body pt-0">
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Machine 1:</strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="player_wins" style="color:green;">0</var> / <var id="player_losses"
+                    style="color:red;">0</var></p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <script type="module">
-    import { binomialDistribution } from
-      "https://cdn.jsdelivr.net/npm/simple-statistics@latest/+esm";
-  
-    window.pointRange = (p_s, y, alpha = 0.05) => {
-      // pmf[k] for k = 0 … y
-      const pmf = binomialDistribution(y, p_s);
-  
-      // cumulative scan for lower bound
-      let cdf = 0, kLow = 0;
-      while (cdf + pmf[kLow] < alpha / 2) cdf += pmf[kLow++];
-  
-      // cumulative scan for upper bound
-      cdf = 0; let kHigh = y;
-      while (cdf + pmf[kHigh] < alpha / 2) cdf += pmf[kHigh--];
-  
-      return [2 * kLow, 2 * kHigh];
-    };
-  </script>
-    
-  <script>
-    // Set up WebSocket connection
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(protocol + '//' + window.location.host);
-    ws.onmessage = (event) => {
-        try {
-            const msg = JSON.parse(event.data);
-            if (msg.label === 'awareness') {
-                // Might put an indicator or something, but it seems extra and its already getting a little cluddered.
-                console.log("Awareness event received at", msg.timestamp);
-            } else if (msg.label === 'outcome') {
-                // When an outcome event is received, add a circle to the carousel.
-                addOutcome(msg.machine, msg.success);
-            } else if (msg.label === 'playerPosition') {
-                console.log("playerPosition event received at");
-                // Expected message: { label: 'playerPosition', x: <value>, z: <value>, theta: <value> }
-                updatePlayerPosition(msg.x, msg.z, msg.theta);
-            } else if (msg.label==='play') {
-              console.log(msg.machine+" play event received at");
-              rollMachine(msg.machine);
-            } else if (msg.label === 'machineAdjustment') {
-                // Expected message: { label: 'machineAdjustment', winRates: [w1, w2, w3, w4], adjustments: [a1, a2, a3, a4] }
-                console.log(msg.modelType+" adjustment event received at");
-                updateMachineBoxes(msg.winRates, msg.adjustments,msg.modelType);
-                updateModelBoxes(msg.adjustments,msg.modelType);
-            }
-        } catch (e) {
-            console.error("Invalid JSON message:", event.data);
-            console.error("Trace:", e);
-        }
-    };
-    
-    ws.onopen = () => {
-        console.log("WebSocket connected");
-    };
-    
-    ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
-    };
-  </script>
-  <script>
-        // Define machine boundaries
-        const machines = {
-      "m1": {
-        bottomLeft: [0.914461, -0.416378],
-        bottomRight: [0.897491, -0.716809],
-        upperLeft: [0.615168, -0.399924],
-        upperRight: [0.600168, -0.699141]
-      },
-      "m2": {
-        bottomLeft: [0.930728, -0.117966],
-        bottomRight: [0.914461, -0.416378],
-        upperLeft: [0.634181, -0.100121],
-        upperRight: [0.615168, -0.399924]
-      },
-      "m3": {
-        bottomLeft: [0.945728, 0.181054],
-        bottomRight: [0.930728, -0.117966],
-        upperLeft: [0.652421, 0.196054],
-        upperRight: [0.634181, -0.100121]
-      },
-      "m4": {
-        bottomLeft: [0.975101, 0.483173],
-        bottomRight: [0.945728, 0.181054],
-        upperLeft: [0.669682, 0.497284],
-        upperRight: [0.652421, 0.196054]
-      }
-    };
-    
-    // Canvas and drawing settings
-    const canvas = document.getElementById('arenaCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    // Plot boundaries
-    const xMin = -1.4, xMax = 1; // X-axis
-    const zMin = -1, zMax = 0.9; // Z-axis
-    
-    // Player state
-    let playerPosition = { x: -1, z: 0, theta: 0 };
-    
-    // Transform world coordinates (because the axis of the arena are weird...)
-    function worldToCanvas(x, z) {
-      // In this mapping, the canvas x coordinate is derived from z values,
-      // and the canvas y coordinate (inverted) is derived from x values.
-      const canvasX = ((z - zMin) / (zMax - zMin)) * canvas.width;
-      const canvasY = canvas.height - ((x - xMin) / (xMax - xMin)) * canvas.height;
-      return { x: canvasX, y: canvasY };
-    }
-    
-    // Draw the entire plot (machine boundaries, player position, and direction arrow)
-    function drawPlot() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw machine boundaries
-      for (let key in machines) {
-        const m = machines[key];
-        // Build polygon points
-        const points = [
-          worldToCanvas(m.bottomLeft[0],m.bottomLeft[1]),
-          worldToCanvas(m.bottomRight[0],m.bottomRight[1]),
-          worldToCanvas(m.upperRight[0],m.upperRight[1]),
-          worldToCanvas(m.upperLeft[0],m.upperLeft[1])
-        ];
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
-        for (let i = 1; i < points.length; i++) {
-          ctx.lineTo(points[i].x, points[i].y);
-        }
-        ctx.closePath();
-        ctx.strokeStyle = getBoundaryColor(key);
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        
-        // Draw machine label at center of polygon
-        const centerX = (points[0].x + points[1].x + points[2].x + points[3].x) / 4;
-        const centerY = (points[0].y + points[1].y + points[2].y + points[3].y) / 4;
-        ctx.fillStyle = getBoundaryColor(key);
-        ctx.font = "14px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText(key, centerX, centerY);
-      }
-      
-      // Draw player's position as a red dot
-      const playerCanvas = worldToCanvas(playerPosition.x, playerPosition.z);
-      ctx.beginPath();
-      ctx.arc(playerCanvas.x, playerCanvas.y, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = "red";
-      ctx.fill();
-      
-      // Draw player’s facing direction as a blue arrow
-      const arrowLength = 0.1; // world units
-      const tipX = playerPosition.x + Math.cos(playerPosition.theta) * arrowLength;
-      const tipZ = playerPosition.z + Math.sin(playerPosition.theta) * arrowLength;
-      const tipCanvas = worldToCanvas(tipX, tipZ);
-      ctx.beginPath();
-      ctx.moveTo(playerCanvas.x, playerCanvas.y);
-      ctx.lineTo(tipCanvas.x, tipCanvas.y);
-      ctx.strokeStyle = "blue";
-      ctx.lineWidth = 3;
-      ctx.stroke();
-    }
-    
-    // Return a fixed color for machine boundaries
-    function getBoundaryColor(key) {
-      const colors = {
-        "m1": "#b476c5",
-        "m2": "#6C9DE9",
-        "m3": "#8c519f",
-        "m4": "#355a92"
-      };
-      return colors[key] || "black";
-    }
-    
-    // Resize canvas and redraw plot
-    function resizeCanvas() {
-      canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientHeight;
-      drawPlot();
-    }
+    <script type="module">
+      import { binomialDistribution } from
+        "https://cdn.jsdelivr.net/npm/simple-statistics@latest/+esm";
 
-    // Update the player's position and redraw the plot
-    function updatePlayerPosition(x, z, theta) {
-      playerPosition.x = x;
-      playerPosition.z = z;
-      playerPosition.theta = theta;
-      drawPlot();
-    }
-    
-    // Update the machine boxes at the bottom based on winRates and adjustments.
-    // winRates: array of length 4 (values between 0 and 1)
-    // adjustments: array of length 4 (each value to be displayed with color)
-    function updateMachineBoxes(winRates, adjustments, modelType="mocap") {
-      for (let i = 0; i < 4; i++) {
-        const hiddenWinrate = document.getElementById('machine'+(i+1)+"_winrate");
-        hiddenWinrate.textContent=(Number(hiddenWinrate.textContent)/100+adjustments[i])*100;
-        const lastAdjustment = document.getElementById('machine'+(i+1)+"_"+modelType+"_pred");
-        lastAdjustment.textContent = adjustments[i];
-        if (Number(lastAdjustment.textContent) < 0) {
-          lastAdjustment.style = "color:red;"
-        } else {
-          lastAdjustment.style = "color:green;"
+      window.pointRange = (p_s, y, alpha = 0.05) => {
+        // pmf[k] for k = 0 … y
+        const pmf = binomialDistribution(y, p_s);
+
+        // cumulative scan for lower bound
+        let cdf = 0, kLow = 0;
+        while (cdf + pmf[kLow] < alpha / 2) cdf += pmf[kLow++];
+
+        // cumulative scan for upper bound
+        cdf = 0; let kHigh = y;
+        while (cdf + pmf[kHigh] < alpha / 2) cdf += pmf[kHigh--];
+
+        return [2 * kLow, 2 * kHigh];
+      };
+    </script>
+
+    <script>
+      // Set up WebSocket connection
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const ws = new WebSocket(protocol + '//' + window.location.host);
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.label === 'awareness') {
+            // Might put an indicator or something, but it seems extra and its already getting a little cluddered.
+            console.log("Awareness event received at", msg.timestamp);
+          } else if (msg.label === 'outcome') {
+            // When an outcome event is received, add a circle to the carousel.
+            addOutcome(msg.machine, msg.success);
+          } else if (msg.label === 'playerPosition') {
+            console.log("playerPosition event received at");
+            // Expected message: { label: 'playerPosition', x: <value>, z: <value>, theta: <value> }
+            updatePlayerPosition(msg.x, msg.z, msg.theta);
+          } else if (msg.label === 'play') {
+            console.log(msg.machine + " play event received at");
+            rollMachine(msg.machine);
+          } else if (msg.label === 'machineAdjustment') {
+            // Expected message: { label: 'machineAdjustment', winRates: [w1, w2, w3, w4], adjustments: [a1, a2, a3, a4] }
+            console.log(msg.modelType + " adjustment event received at");
+            updateMachineBoxes(msg.winRates, msg.adjustments, msg.modelType);
+            updateModelBoxes(msg.adjustments, msg.modelType);
+          }
+        } catch (e) {
+          console.error("Invalid JSON message:", event.data);
+          console.error("Trace:", e);
+        }
+      };
+
+      ws.onopen = () => {
+        console.log("WebSocket connected");
+      };
+
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+    </script>
+    <script>
+      // Define machine boundaries
+      const machines = {
+        "m1": {
+          bottomLeft: [0.914461, -0.416378],
+          bottomRight: [0.897491, -0.716809],
+          upperLeft: [0.615168, -0.399924],
+          upperRight: [0.600168, -0.699141]
+        },
+        "m2": {
+          bottomLeft: [0.930728, -0.117966],
+          bottomRight: [0.914461, -0.416378],
+          upperLeft: [0.634181, -0.100121],
+          upperRight: [0.615168, -0.399924]
+        },
+        "m3": {
+          bottomLeft: [0.945728, 0.181054],
+          bottomRight: [0.930728, -0.117966],
+          upperLeft: [0.652421, 0.196054],
+          upperRight: [0.634181, -0.100121]
+        },
+        "m4": {
+          bottomLeft: [0.975101, 0.483173],
+          bottomRight: [0.945728, 0.181054],
+          upperLeft: [0.669682, 0.497284],
+          upperRight: [0.652421, 0.196054]
+        }
+      };
+
+      // Canvas and drawing settings
+      const canvas = document.getElementById('arenaCanvas');
+      const ctx = canvas.getContext('2d');
+
+      // Plot boundaries
+      const xMin = -1.4, xMax = 1; // X-axis
+      const zMin = -1, zMax = 0.9; // Z-axis
+
+      // Player state
+      let playerPosition = { x: -1, z: 0, theta: 0 };
+
+      // Transform world coordinates (because the axis of the arena are weird...)
+      function worldToCanvas(x, z) {
+        // In this mapping, the canvas x coordinate is derived from z values,
+        // and the canvas y coordinate (inverted) is derived from x values.
+        const canvasX = ((z - zMin) / (zMax - zMin)) * canvas.width;
+        const canvasY = canvas.height - ((x - xMin) / (xMax - xMin)) * canvas.height;
+        return { x: canvasX, y: canvasY };
+      }
+
+      // Draw the entire plot (machine boundaries, player position, and direction arrow)
+      function drawPlot() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw machine boundaries
+        for (let key in machines) {
+          const m = machines[key];
+          // Build polygon points
+          const points = [
+            worldToCanvas(m.bottomLeft[0], m.bottomLeft[1]),
+            worldToCanvas(m.bottomRight[0], m.bottomRight[1]),
+            worldToCanvas(m.upperRight[0], m.upperRight[1]),
+            worldToCanvas(m.upperLeft[0], m.upperLeft[1])
+          ];
+          ctx.beginPath();
+          ctx.moveTo(points[0].x, points[0].y);
+          for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i].x, points[i].y);
+          }
+          ctx.closePath();
+          ctx.strokeStyle = getBoundaryColor(key);
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // Draw machine label at center of polygon
+          const centerX = (points[0].x + points[1].x + points[2].x + points[3].x) / 4;
+          const centerY = (points[0].y + points[1].y + points[2].y + points[3].y) / 4;
+          ctx.fillStyle = getBoundaryColor(key);
+          ctx.font = "14px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText(key, centerX, centerY);
+        }
+
+        // Draw player's position as a red dot
+        const playerCanvas = worldToCanvas(playerPosition.x, playerPosition.z);
+        ctx.beginPath();
+        ctx.arc(playerCanvas.x, playerCanvas.y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
+
+        // Draw player’s facing direction as a blue arrow
+        const arrowLength = 0.1; // world units
+        const tipX = playerPosition.x + Math.cos(playerPosition.theta) * arrowLength;
+        const tipZ = playerPosition.z + Math.sin(playerPosition.theta) * arrowLength;
+        const tipCanvas = worldToCanvas(tipX, tipZ);
+        ctx.beginPath();
+        ctx.moveTo(playerCanvas.x, playerCanvas.y);
+        ctx.lineTo(tipCanvas.x, tipCanvas.y);
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+
+      // Return a fixed color for machine boundaries
+      function getBoundaryColor(key) {
+        const colors = {
+          "m1": "#b476c5",
+          "m2": "#6C9DE9",
+          "m3": "#8c519f",
+          "m4": "#355a92"
+        };
+        return colors[key] || "black";
+      }
+
+      // Resize canvas and redraw plot
+      function resizeCanvas() {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+        drawPlot();
+      }
+
+      // Update the player's position and redraw the plot
+      function updatePlayerPosition(x, z, theta) {
+        playerPosition.x = x;
+        playerPosition.z = z;
+        playerPosition.theta = theta;
+        drawPlot();
+      }
+
+      // Update the machine boxes at the bottom based on winRates and adjustments.
+      // winRates: array of length 4 (values between 0 and 1)
+      // adjustments: array of length 4 (each value to be displayed with color)
+      function updateMachineBoxes(winRates, adjustments, modelType = "mocap") {
+        for (let i = 0; i < 4; i++) {
+          const hiddenWinrate = document.getElementById('machine' + (i + 1) + "_winrate");
+          hiddenWinrate.textContent = (Number(hiddenWinrate.textContent) / 100 + adjustments[i]) * 100;
+          const lastAdjustment = document.getElementById('machine' + (i + 1) + "_" + modelType + "_pred");
+          lastAdjustment.textContent = adjustments[i];
+          if (Number(lastAdjustment.textContent) < 0) {
+            lastAdjustment.style = "color:red;"
+          } else {
+            lastAdjustment.style = "color:green;"
+          }
         }
       }
-    }
-    function updateModelBoxes(adjustments,modelType="mocap") {
-        const previousPreviousPrediction = document.getElementById(modelType+"_last_pred");
-        const previousPreviousAdjustment = document.getElementById(modelType+"_last_adj");
-        const previousPrediction = document.getElementById(modelType+"_pred");
-        const previousAdjustment = document.getElementById(modelType+"_adj");
+      function updateModelBoxes(adjustments, modelType = "mocap") {
+        const previousPreviousPrediction = document.getElementById(modelType + "_last_pred");
+        const previousPreviousAdjustment = document.getElementById(modelType + "_last_adj");
+        const previousPrediction = document.getElementById(modelType + "_pred");
+        const previousAdjustment = document.getElementById(modelType + "_adj");
         min_adj = 0;
         min_machine_idx = 0;
-        for(i=0;i<4;i++) {
+        for (i = 0; i < 4; i++) {
           if (adjustments[i] < min_adj) {
             min_adj = adjustments[i];
-            min_idx = i+1;
+            min_idx = i + 1;
           }
 
         }
         previousPreviousPrediction.textContent = previousPrediction.textContent;
-        const predStyle = document.getElementById(modelType+"_pred_style");
-        const prevPredStyle = document.getElementById(modelType+"_last_pred_style");
+        const predStyle = document.getElementById(modelType + "_pred_style");
+        const prevPredStyle = document.getElementById(modelType + "_last_pred_style");
         if (predStyle.style.color == "green") {
           prevPredStyle.style = "color:green;"
         } else if (predStyle.style.color == "red") {
@@ -637,104 +729,113 @@
           previousPreviousAdjustment.style = "color:green;"
         }
         previousPrediction.textContent = min_idx;
-        if (adjustments[min_idx-1] < 0) {
+        if (adjustments[min_idx - 1] < 0) {
           previousAdjustment.style = "color:red;"
         } else {
           previousAdjustment.style = "color:green;"
         }
-        previousAdjustment.textContent = adjustments[min_idx-1];
-    }
-    function updateModelBoxesOnPlay(modelType,machine,success) {
-      const prediction = document.getElementById('machine'+machine+'_'+modelType+'_pred');
-      const adjustment = document.getElementById('machine'+machine+'_'+modelType+'_acc');
-      const value = Number(adjustment.textContent);
-      if (Number(prediction.textContent) < 0) {
-        adjustment.textContent = value+1;
-      } else {
-        adjustment.textContent = value-1;
+        previousAdjustment.textContent = adjustments[min_idx - 1];
       }
-      if (Number(adjustment.textContent) < 0) {
-        adjustment.style = "color:red;"
-      } else {
-        adjustment.style = "color:green;"
-      }
-      const currentPrediction = document.getElementById(modelType+"_pred");
-      if (currentPrediction.textContent == machine) {
-        document.getElementById(modelType+"_pred_style").style = "color:green;";
+      function updateModelBoxesOnPlay(modelType, machine, success) {
+        const prediction = document.getElementById('machine' + machine + '_' + modelType + '_pred');
+        const adjustment = document.getElementById('machine' + machine + '_' + modelType + '_acc');
+        const value = Number(adjustment.textContent);
+        if (Number(prediction.textContent) < 0) {
+          adjustment.textContent = value + 1;
+        } else {
+          adjustment.textContent = value - 1;
+        }
+        if (Number(adjustment.textContent) < 0) {
+          adjustment.style = "color:red;"
+        } else {
+          adjustment.style = "color:green;"
+        }
+        const currentPrediction = document.getElementById(modelType + "_pred");
+        if (currentPrediction.textContent == machine) {
+          document.getElementById(modelType + "_pred_style").style = "color:green;";
 
-      } else {
-        document.getElementById(modelType+"_pred_style").style = "color:red;";
-      }
-      const impact = document.getElementById(modelType+"_impact");
-      impact.textContent=Number(impact.textContent) + Number(prediction.textContent);
-      if (Number(impact.textContent) < 0) {
-        impact.style="color:red;"
-      } else {
-        impact.style="color:green;"
+        } else {
+          document.getElementById(modelType + "_pred_style").style = "color:red;";
+        }
+        const impact = document.getElementById(modelType + "_impact");
+        impact.textContent = Number(impact.textContent) + Number(prediction.textContent);
+        if (Number(impact.textContent) < 0) {
+          impact.style = "color:red;"
+        } else {
+          impact.style = "color:green;"
+        }
+
       }
 
-    }
-
-    function updateMachine(machine,success) {
-      const timesPlayed = document.getElementById('machine'+machine+"_total_plays");
-      timesPlayed.textContent=Number(timesPlayed.textContent)+1;
-      updateModelBoxesOnPlay("mocap",machine,success);
-      updateModelBoxesOnPlay("behavioral",machine,success);
-    }
-
-    function addOutcome(machine, success) {
-      const carousel = document.getElementById('playerHistory');
-      // create the new bubble
-      const circle = document.createElement('div');
-      const wins = document.getElementById('player_wins');
-      const losses = document.getElementById('player_losses');
-      circle.className = 'playOutcome';
-      const rolledWR = Number(document.getElementById('machine'+machine+"_winrate").textContent)/100;
-      const continuousScore = document.getElementById('player_continuous_score');
-      continuousScore.textContent = Number(continuousScore.textContent)+2*rolledWR;
-      if (success) {
-        circle.style.backgroundColor = 'green';
-        wins.textContent = Number(wins.textContent)+1;
-      } else {
-        circle.style.backgroundColor = 'red';
-        losses.textContent = Number(losses.textContent)+1;
+      function updateMachine(machine, success) {
+        const timesPlayed = document.getElementById('machine' + machine + "_total_plays");
+        timesPlayed.textContent = Number(timesPlayed.textContent) + 1;
+        updateModelBoxesOnPlay("mocap", machine, success);
+        updateModelBoxesOnPlay("behavioral", machine, success);
       }
-      
-      const expectedRangeLow = document.getElementById('player_expected_score_low');
-      const expectedRangeHigh = document.getElementById('player_expected_score_high');
-      calcRange = pointRange(0.5,Number(wins.textContent)+Number(losses.textContent));
-      expectedRangeLow.textContent = calcRange[0];
-      expectedRangeHigh.textContent = calcRange[1];
-      circle.textContent = machine;
-      // put it at the very front so it sits at top-left
-      carousel.insertBefore(circle, carousel.firstChild);
-      // now update EVERY bubble’s size & opacity based on its index
-      Array.from(carousel.children).forEach((item, idx) => {
-        // idx = 0 is newest, idx = 1 second‑newest, etc.
-        scale = Math.max(1, 2 - idx * 0.2);  
-        size = 40 + 15 * scale;
+
+      function addOutcome(machine, success) {
+        const carousel = document.getElementById('playerHistory');
+        // create the new bubble
+        const circle = document.createElement('div');
+        const wins = document.getElementById('player_wins');
+        const losses = document.getElementById('player_losses');
+        circle.className = 'playOutcome';
+        const rolledWR = Number(document.getElementById('machine' + machine + "_winrate").textContent) / 100;
+        const continuousScore = document.getElementById('player_continuous_score');
+        continuousScore.textContent = Number(continuousScore.textContent) + 2 * rolledWR;
+        if (success) {
+          circle.style.backgroundColor = 'green';
+          wins.textContent = Number(wins.textContent) + 1;
+        } else {
+          circle.style.backgroundColor = 'red';
+          losses.textContent = Number(losses.textContent) + 1;
+        }
+
+        const expectedRangeLow = document.getElementById('player_expected_score_low');
+        const expectedRangeHigh = document.getElementById('player_expected_score_high');
+        calcRange = pointRange(0.5, Number(wins.textContent) + Number(losses.textContent));
+        expectedRangeLow.textContent = calcRange[0];
+        expectedRangeHigh.textContent = calcRange[1];
+        circle.textContent = machine;
+        // put it at the very front so it sits at top-left
+        carousel.insertBefore(circle, carousel.firstChild);
+        // now update EVERY bubble’s size & opacity based on its index
+        Array.from(carousel.children).forEach((item, idx) => {
+          // idx = 0 is newest, idx = 1 second‑newest, etc.
+          scale = Math.max(1, 2 - idx * 0.2);
+          size = 40 + 15 * scale;
           // newest = 1.0, then 0.9, 0.8 … but never below 0.5
           // base 30px + extra up to 20px when scale=1
-        item.style.width  = `${size}px`;
-        item.style.height = `${size}px`;
-        item.style.opacity = `${scale/2}`;
-      });
-      updateMachine(machine,success);
+          item.style.width = `${size}px`;
+          item.style.height = `${size}px`;
+          item.style.opacity = `${scale / 2}`;
+        });
+        updateMachine(machine, success);
 
 
-    }
-    function rollMachine(machine) {
-      const rolledWR = Number(document.getElementById('machine'+machine+"_winrate").textContent)/100;
-      const roll = Math.random();
-      addOutcome(machine,(roll < rolledWR)); 
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-  </script>
-  <!-- Bootstrap 5 JS bundle -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    crossorigin="anonymous"
-  ></script>
+      }
+      function highlightMachine(machineNumber) {
+        const card = document.getElementById(`machine${machineNumber}`);
+        if (card) {
+          card.classList.add("machine-highlight");
+          setTimeout(() => {
+            card.classList.remove("machine-highlight");
+          }, 800); // match duration of CSS animation
+        }
+      }
+      function rollMachine(machine) {
+        const rolledWR = Number(document.getElementById('machine' + machine + "_winrate").textContent) / 100;
+        const roll = Math.random();
+        addOutcome(machine, (roll < rolledWR));
+        highlightMachine(machine);
+      }
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+    </script>
+    <!-- Bootstrap 5 JS bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+      crossorigin="anonymous"></script>
 </body>
+
 </html>
