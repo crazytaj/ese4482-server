@@ -364,7 +364,7 @@
             </div>
             <div class="row">
               <div class="col">
-                <p class="card-text"><strong>Cumualitive Impact: </strong></p>
+                <p class="card-text"><strong>Cumulative Impact: </strong></p>
               </div>
               <div class="col">
                 <p class="card-text"><var id="behavioral_impact">0.0</var></p>
@@ -416,7 +416,7 @@
             </div>
             <div class="row">
               <div class="col">
-                <p class="card-text"><strong>Cumualitive Impact: </strong></p>
+                <p class="card-text"><strong>Cumulative Impact: </strong></p>
               </div>
               <div class="col">
                 <p class="card-text"><var id="mocap_impact">0.0</var></p>
@@ -758,7 +758,10 @@
           document.getElementById(modelType + "_pred_style").style = "color:red;";
         }
         const impact = document.getElementById(modelType + "_impact");
-        impact.textContent = Number(impact.textContent) + Number(prediction.textContent);
+        const hiddenWR = Number(document.getElementById(`machine${machine}_winrate`).textContent) / 100;
+        const impactDelta = hiddenWR - 0.5;
+        impact.textContent = ((Number(impact.textContent) + impactDelta) * 100).toFixed(1) + '%';
+
         if (Number(impact.textContent) < 0) {
           impact.style = "color:red;"
         } else {
