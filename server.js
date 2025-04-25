@@ -19,7 +19,7 @@ const server = http.createServer((req, res) => {
     });
   } else if ((req.method === 'GET') && req.url === `/spectator`) {
     // Serve client.html for any GET request.
-    const filePath = path.join(__dirname, 'spectator.html');
+    const filePath = path.join(__dirname, 'spectator_2.html');
     fs.readFile(filePath, (err, data) => {
       if (err) {
         res.writeHead(500);
@@ -54,7 +54,8 @@ const server = http.createServer((req, res) => {
             message = JSON.stringify({
               label: 'machineAdjustment',
               winRates: data.winrates,
-              adjustments: data.adjustments
+              adjustments: data.adjustments,
+              modelType:data.modelType
             });
             break;
           case 'playerPosition':
