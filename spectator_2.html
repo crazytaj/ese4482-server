@@ -212,7 +212,7 @@
                 <p class="card-text"><strong>Model Accuracy: </strong></p>
               </div>
               <div class="col">
-                <p class="card-text"><var id="machine2_behavioral_acc" style="color:red;">52.5</var> / <var
+                <p class="card-text"><var id="machine2_behavioral_acc" style="color:red;">0</var> / <var
                     style="color:green;" id="machine2_mocap_acc">0</var></p>
               </div>
             </div>
@@ -221,7 +221,7 @@
                 <p class="card-text"><strong>Last Model Adjustment: </strong></p>
               </div>
               <div class="col">
-                <p class="card-text"><var id="machine2_behavioral_pred" style="color:red;">52.5</var> / <var
+                <p class="card-text"><var id="machine2_behavioral_pred" style="color:red;">0</var> / <var
                     style="color:green;" id="machine2_mocap_pred">0</var></p>
               </div>
             </div>
@@ -239,7 +239,7 @@
                 <p class="card-text"><strong>Hidden Winrate: </strong></p>
               </div>
               <div class="col">
-                <p class="card-text" style="color:red;"><var id="machine3_winrate">50</var>%</p>
+                <p class="card-text" style="color:red;"><var id="machine3_winrate">52.5</var>%</p>
               </div>
             </div>
             <div class="row">
@@ -284,7 +284,7 @@
                 <p class="card-text"><strong>Hidden Winrate: </strong></p>
               </div>
               <div class="col">
-                <p class="card-text" style="color:red;"><var id="machine4_winrate">50</var>%</p>
+                <p class="card-text" style="color:red;"><var id="machine4_winrate">52.5</var>%</p>
               </div>
             </div>
             <div class="row">
@@ -465,8 +465,8 @@
                 <p class="card-text"><strong>Beat Model: </strong></p>
               </div>
               <div class="col">
-                <p class="card-text"><var id="player_beat_behavioral" style="color:red;">NOT</var> / <var
-                    style="color:green;" id="player_beat_mocap">IMPLEMENTED</var></p>
+                <p class="card-text"><var id="player_beat_behavioral" style="color:red;">0</var> / <var
+                    style="color:green;" id="player_beat_mocap">0</var></p>
               </div>
             </div>
           </div>
@@ -485,8 +485,35 @@
                 <p class="card-text"><strong>Machine 1:</strong></p>
               </div>
               <div class="col">
-                <p class="card-text"><var id="player_wins" style="color:green;">0</var> / <var id="player_losses"
-                    style="color:red;">0</var></p>
+                <p class="card-text"><var id="m1_w" style="color:green;">0</var> / <var id="m1_l"
+                    style="color:red;">0</var> : <var id="m1_t">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Machine 2:</strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="m2_w" style="color:green;">0</var> / <var id="m2_l"
+                    style="color:red;">0</var> : <var id="m2_t">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Machine 3:</strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="m3_w" style="color:green;">0</var> / <var id="m3_l"
+                    style="color:red;">0</var> : <var id="m3_t">0</var></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p class="card-text"><strong>Machine 4:</strong></p>
+              </div>
+              <div class="col">
+                <p class="card-text"><var id="m4_w" style="color:green;">0</var> / <var id="m4_l"
+                    style="color:red;">0</var> : <var id="m4_t">0</var></p>
               </div>
             </div>
           </div>
@@ -587,7 +614,7 @@
       const ctx = canvas.getContext('2d');
 
       // Plot boundaries
-      const xMin = -1.4, xMax = 1; // X-axis
+      const xMin = -1.6, xMax = 1; // X-axis
       const zMin = -1, zMax = 0.9; // Z-axis
 
       // Player state
@@ -759,8 +786,8 @@
         }
         const impact = document.getElementById(modelType + "_impact");
         const hiddenWR = Number(document.getElementById(`machine${machine}_winrate`).textContent) / 100;
-        const impactDelta = hiddenWR - 0.5;
-        impact.textContent = ((Number(impact.textContent) + impactDelta) * 100).toFixed(1) + '%';
+        const impactDelta = hiddenWR - 0.525;
+        impact.textContent = Number(impact.textContent) + impactDelta;
 
         if (Number(impact.textContent) < 0) {
           impact.style = "color:red;"
@@ -778,6 +805,10 @@
       }
 
       function addOutcome(machine, success) {
+        const mLogW = document.getElementById('m'+machine+'_w');
+        const mLogL = document.getElementById('m'+machine+'_l');
+        const mLogT = document.getElementById('m'+machine+'_t');
+        mLogT.textContent = Number(mLogT.textContent) + 1;
         const carousel = document.getElementById('playerHistory');
         // create the new bubble
         const circle = document.createElement('div');
@@ -786,18 +817,27 @@
         circle.className = 'playOutcome';
         const rolledWR = Number(document.getElementById('machine' + machine + "_winrate").textContent) / 100;
         const continuousScore = document.getElementById('player_continuous_score');
+        if (rolledWR < 0.525) {
+          const lost = document.getElementById('player_beat_behavioral');
+          lost.textContent = Number(lost.textContent) + 1;
+        } else {
+          const won = document.getElementById('player_beat_mocap');
+          won.textContent = Number(won.textContent) + 1;
+        }
         continuousScore.textContent = Number(continuousScore.textContent) + 2 * rolledWR;
         if (success) {
+          mLogW.textContent = Number(mLogW.textContent) + 1;
           circle.style.backgroundColor = 'green';
           wins.textContent = Number(wins.textContent) + 1;
         } else {
+          mLogL.textContent = Number(mLogL.textContent) + 1;
           circle.style.backgroundColor = 'red';
           losses.textContent = Number(losses.textContent) + 1;
         }
 
         const expectedRangeLow = document.getElementById('player_expected_score_low');
         const expectedRangeHigh = document.getElementById('player_expected_score_high');
-        calcRange = pointRange(0.5, Number(wins.textContent) + Number(losses.textContent));
+        calcRange = pointRange(0.525, Number(wins.textContent) + Number(losses.textContent));
         expectedRangeLow.textContent = calcRange[0];
         expectedRangeHigh.textContent = calcRange[1];
         circle.textContent = machine;
